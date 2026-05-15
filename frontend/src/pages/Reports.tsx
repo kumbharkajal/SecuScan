@@ -26,9 +26,9 @@ const containerVariants = {
 
 const itemVariants = {
     hidden: { opacity: 0, scale: 0.95, y: 20 },
-    visible: { 
-      opacity: 1, 
-      scale: 1, 
+    visible: {
+      opacity: 1,
+      scale: 1,
       y: 0,
       transition: { duration: 0.4 }
     }
@@ -55,7 +55,7 @@ export default function Reports() {
 
   return (
     <div className="min-h-screen bg-charcoal-dark text-silver p-6 md:p-12 space-y-12">
-      
+
       {/* Neo-Brutalist Header */}
       <header className="relative flex flex-col md:flex-row justify-between items-start md:items-end gap-8 pb-12 border-b-4 border-silver-bright/10 font-black">
         <div className="space-y-4">
@@ -71,14 +71,14 @@ export default function Reports() {
         </div>
 
          <div className="flex items-center gap-6">
-            <button 
+            <button
                onClick={fetchReports}
                className="bg-charcoal border-4 border-black p-4 text-silver-bright shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
                title="Refresh Archive"
             >
                <span className="material-symbols-outlined">sync</span>
             </button>
-            <button 
+            <button
                onClick={() => window.open(`${API_BASE}/task/latest/report/pdf`, '_blank')} // Placeholder for latest report
                className="bg-silver-bright border-4 border-black p-4 text-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
                title="Download Latest Briefing"
@@ -117,12 +117,12 @@ export default function Reports() {
                       <label className="text-[10px] font-black text-silver-bright uppercase tracking-[0.2em] italic">Classification_Isolation</label>
                       <div className="grid grid-cols-1 gap-2">
                           {['all', 'executive', 'technical', 'compliance'].map(t => (
-                              <button 
+                              <button
                                   key={t}
                                   onClick={() => setSelectedType(t)}
                                   className={`px-6 py-4 text-left text-[10px] font-black uppercase tracking-widest border-4 transition-all flex justify-between items-center ${
-                                      selectedType === t 
-                                      ? 'bg-rag-red border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' 
+                                      selectedType === t
+                                      ? 'bg-rag-red border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
                                       : 'bg-charcoal-dark border-black text-silver/40 hover:border-silver-bright/20'
                                   }`}
                               >
@@ -154,7 +154,7 @@ export default function Reports() {
               </div>
 
               <AnimatePresence mode="popLayout">
-                  <motion.div 
+                  <motion.div
                       variants={containerVariants}
                       initial="hidden"
                       animate="visible"
@@ -173,32 +173,30 @@ export default function Reports() {
                                 </div>
                             </div>
                         ) : (
-                            filteredReports.map((report) => (
-                                
-                          <motion.div 
-                              key={report.id}
-                              variants={itemVariants}
-                              className="group bg-charcoal border-4 border-black p-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[14px_14px_0px_0px_rgba(0,0,0,1)] transition-all relative overflow-hidden"
-                          >
-                          
+                                    filteredReports.map((report) => (
+                                        <motion.div
+                                            key={report.id}
+                                            variants={itemVariants}
+                                            className="group bg-charcoal border-4 border-black p-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[14px_14px_0px_0px_rgba(0,0,0,1)] transition-all relative overflow-hidden"
+                                        >
                               {/* Status Top Bar */}
                               <div className={`absolute top-0 left-0 h-2 transition-all duration-500 ${
-                                  report.status === 'ready' ? 'bg-rag-green w-full' : 
+                                  report.status === 'ready' ? 'bg-rag-green w-full' :
                                   report.status === 'failed' ? 'bg-rag-red w-full' : 'bg-rag-amber w-1/2 animate-pulse'
                               }`}></div>
 
                               <div className="space-y-8 relative z-10">
                                   <div className="flex justify-between items-start">
                                       <span className={`px-2 py-0.5 text-[9px] font-black uppercase italic border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
-                                          report.type === 'executive' ? 'bg-silver-bright text-black' : 
-                                          report.type === 'compliance' ? 'bg-rag-green text-black' : 
+                                          report.type === 'executive' ? 'bg-silver-bright text-black' :
+                                          report.type === 'compliance' ? 'bg-rag-green text-black' :
                                           'bg-rag-blue text-black'
                                       }`}>
                                           {report.type}_TYPE
                                       </span>
                                       <span className="material-symbols-outlined text-silver/10 group-hover:text-silver-bright transition-colors text-2xl">description</span>
                                   </div>
-                                  
+
                                   <div>
                                       <h3 className="text-3xl font-black text-silver-bright uppercase tracking-tighter italic leading-tight group-hover:text-rag-red transition-colors font-mono">
                                           {report.name}
@@ -220,21 +218,21 @@ export default function Reports() {
                                           <span className="text-xs font-black font-mono text-silver-bright">{report.pages.toString().padStart(3, '0')}</span>
                                       </div>
                                   </div>
-                                  
+
                                   <div className="flex justify-between items-end pt-2">
                                       <div className="space-y-1">
                                           <p className="text-[8px] font-black uppercase text-silver/20 tracking-[0.3em] italic leading-none">TIMESTAMP</p>
                                           <p className="text-[10px] font-mono text-silver-bright uppercase font-black">{formatDateLong(report.generated_at)}</p>
                                       </div>
                                       <div className="flex gap-4">
-                                          <button 
+                                          <button
                                               onClick={() => navigate(`/task/${report.task_id}`)}
                                               className="bg-charcoal-dark border-4 border-black p-3 text-silver/20 group-hover:text-silver-bright group-hover:bg-black transition-all"
                                               title="View Briefing"
                                           >
                                               <span className="material-symbols-outlined text-sm">visibility</span>
                                           </button>
-                                          <button 
+                                          <button
                                               onClick={() => window.open(`${API_BASE}/task/${report.task_id}/report/pdf`, '_blank')}
                                               className="bg-charcoal-dark border-4 border-black p-3 text-silver/20 group-hover:text-silver-bright group-hover:bg-black transition-all"
                                               title="Download PDF"
