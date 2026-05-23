@@ -26,7 +26,6 @@ export function parseDateSafe(rawValue: string | null | undefined): Date | null 
     const isValid = !Number.isNaN(d.getTime())
   
    // 2. Sanity check: Ensure the year is between 1900 and 2100
-   // This is what will catch the "99999" error from your screenshot
     const isRealistic = isValid && d.getFullYear() > 1900 && d.getFullYear() < 2100
 
     if (isRealistic) return d
