@@ -8,10 +8,10 @@ export function parseDateSafe(rawValue: string | null | undefined): Date | null 
   if (raw.toLowerCase() === 'now') return new Date()
 
   try {
-  // Handle formats like "YYYY-MM-DD HH:MM:SS" (SQLite) vs standard ISO-8601
+    // Handle formats like "YYYY-MM-DD HH:MM:SS" (SQLite) vs standard ISO-8601
     const isoCompatible = raw.includes('T') ? raw : raw.replace(' ', 'T')
 
-  // Check if the string already has timezone info (e.g. "Z" or "+HH:MM")
+    // Check if the string already has timezone info (e.g. "Z" or "+HH:MM")
     const hasTimezone = /(?:Z|[+-]\d{2}:\d{2})$/.test(isoCompatible)
 
     // We try multiple candidate strings if timezone is missing
@@ -39,19 +39,19 @@ export function parseDateSafe(rawValue: string | null | undefined): Date | null 
  * Gets the preferred timezone from local storage or returns undefined to use system default.
  */
 function getPreferredTimeZone(): string | undefined {
-    try {
-      const saved = localStorage.getItem('secuscan-config');
-      if (saved) {
-          const config = JSON.parse(saved)
-          if (config.timezone && config.timezone !== 'auto') {
-              return config.timezone
-          }
+  try {
+    const saved = localStorage.getItem('secuscan-config')
+    if (saved) {
+      const config = JSON.parse(saved)
+      if (config.timezone && config.timezone !== 'auto') {
+        return config.timezone
       }
-    } catch (e) {
-      // Fallback to system default
     }
-    return undefined
+  } catch (e) {
+      // Fallback to system default
   }
+  return undefined
+}
 
 /**
  * Returns the current timezone being used (either preferred or system default).
@@ -71,7 +71,7 @@ export function getCurrentTimeZone(): string {
  */
 export function getTimeZoneAbbreviation(): string {
   try {
-    const tz = getPreferredTimeZone();
+    const tz = getPreferredTimeZone()
     const formatter = new Intl.DateTimeFormat([], {
         timeZoneName: 'short',
         ...(tz ? { timeZone: tz } : {})
@@ -109,7 +109,7 @@ export function formatTaskInit(dateStr: string): { date: string, time: string, t
   const parsed = parseDateSafe(dateStr)
   if (!parsed) return { date: 'UNKNOWN DATE', time: 'UNKNOWN TIME', tz: '' }
 
-  const tz = getPreferredTimeZone();
+  const tz = getPreferredTimeZone()
   const date = parsed.toLocaleDateString([], {
     month: 'short',
     day: 'numeric',
@@ -125,7 +125,7 @@ export function formatTaskInit(dateStr: string): { date: string, time: string, t
     ...(tz ? { timeZone: tz } : {})
   })
 
-  const tzAbbr = getTimeZoneAbbreviation();
+  const tzAbbr = getTimeZoneAbbreviation()
 
   return { date, time, tz: tzAbbr }
 }
@@ -137,7 +137,7 @@ export function formatDateLong(dateStr: string | null): string {
     const d = parseDateSafe(dateStr)
     if (!d) return 'N/A'
 
-    const tz = getPreferredTimeZone();
+    const tz = getPreferredTimeZone()
     const formatted = d.toLocaleString([], {
         day: '2-digit',
         month: 'short',
@@ -157,7 +157,7 @@ export function formatDateLong(dateStr: string | null): string {
  * Shorthand for general toLocaleDateString without hardcoding.
  */
 export function formatLocaleDate(dateStr: string | Date | null | undefined, options: Intl.DateTimeFormatOptions = {}): string {
-    const d = typeof dateStr === 'string' || dateStr === null || dateStr === undefined ? parseDateSafe(dateStr) : dateStr;
+    const d = typeof dateStr === 'string' || dateStr === null || dateStr === undefined ? parseDateSafe(dateStr) : dateStr
     if (!d) return 'N/A'
     const tz = getPreferredTimeZone()
     return d.toLocaleDateString([], {
@@ -170,8 +170,8 @@ export function formatLocaleDate(dateStr: string | Date | null | undefined, opti
  * Shorthand for general toLocaleTimeString without hardcoding.
  */
 export function formatLocaleTime(dateStr: string | Date | null | undefined, options: Intl.DateTimeFormatOptions = {}): string {
-    const d = typeof dateStr === 'string' || dateStr === null || dateStr === undefined ? parseDateSafe(dateStr) : dateStr;
-    if (!d) return 'N/A';
+    const d = typeof dateStr === 'string' || dateStr === null || dateStr === undefined ? parseDateSafe(dateStr) : dateStr
+    if (!d) return 'N/A'
     const tz = getPreferredTimeZone()
     return d.toLocaleTimeString([], {
         ...(tz ? { timeZone: tz } : {}),

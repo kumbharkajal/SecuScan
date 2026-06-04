@@ -38,7 +38,7 @@ describe("date utilities", () => {
       expect(parseDateSafe(null)).toBeNull()
     })
   })
-    
+
   describe("formatDateLong", () => {
     test("formats valid date", () => {
       const result = formatDateLong("2026-05-12T10:30:00Z")
@@ -89,27 +89,27 @@ describe("date utilities", () => {
     })
   })
 
-    describe("timezone preference safety", () => {
-      test("does not crash without localStorage config", () => {
-        expect(() => formatLocaleDate("2026-05-12T10:30:00Z")).not.toThrow()
-      })
-
-      test("uses fallback timezone safely", () => {
-        expect(getCurrentTimeZone()).toBeTruthy()
-      })
+  describe("timezone preference safety", () => {
+    test("does not crash without localStorage config", () => {
+      expect(() => formatLocaleDate("2026-05-12T10:30:00Z")).not.toThrow()
     })
 
-    describe("formatTaskInit", () => {
-      test("returns UNKNOWN values for invalid date", () => {
-        const result = formatTaskInit("bad-date")
-        expect(result.date).toBe("UNKNOWN DATE")
-        expect(result.time).toBe("UNKNOWN TIME")
-      })
-
-      test("formats valid task date", () => {
-        const result = formatTaskInit("2026-05-12T10:30:00Z")
-        expect(result.date).not.toBe("UNKNOWN DATE")
-        expect(result.time).not.toBe("UNKNOWN TIME")
-      })
+    test("uses fallback timezone safely", () => {
+      expect(getCurrentTimeZone()).toBeTruthy()
     })
   })
+
+  describe("formatTaskInit", () => {
+    test("returns UNKNOWN values for invalid date", () => {
+      const result = formatTaskInit("bad-date")
+      expect(result.date).toBe("UNKNOWN DATE")
+      expect(result.time).toBe("UNKNOWN TIME")
+    })
+
+    test("formats valid task date", () => {
+      const result = formatTaskInit("2026-05-12T10:30:00Z")
+      expect(result.date).not.toBe("UNKNOWN DATE")
+      expect(result.time).not.toBe("UNKNOWN TIME")
+    })
+  })
+})
