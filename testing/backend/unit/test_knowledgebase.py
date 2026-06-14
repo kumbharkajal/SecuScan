@@ -88,4 +88,3 @@ def test_knowledgebase_caching_and_invalidation(tmp_path):
         entries3 = kb._load_entries()
         assert "cpe:/a:test:new:1.0" in entries3
         assert mock_loads.call_count == 1
-
