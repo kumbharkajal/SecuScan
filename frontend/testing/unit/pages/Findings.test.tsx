@@ -259,4 +259,20 @@ describe('Findings — virtualized list', () => {
     const suppressedChips = screen.queryAllByText('suppressed')
     expect(suppressedChips.length).toBeGreaterThan(0)
   })
+
+  it('renders filter section with correct layout classes to prevent overlap', async () => {
+    vi.mocked(getFindings).mockResolvedValue({ findings: [] })
+    render(<Findings />)
+    await waitFor(() => expect(screen.queryByText('Synchronizing findings feed...')).not.toBeInTheDocument())
+
+    const targetLabel = screen.getByText('Target')
+    const fieldContainer = targetLabel.closest('div')
+    expect(fieldContainer).toHaveClass('space-y-2', 'min-w-0')
+
+    const gridContainer = fieldContainer?.parentElement
+    expect(gridContainer).toHaveClass('grid', 'gap-4', 'sm:grid-cols-2', 'lg:grid-cols-3', 'xl:grid-cols-4')
+
+    const filterContainer = gridContainer?.parentElement
+    expect(filterContainer).toHaveClass('flex', 'flex-col', 'gap-6')
+  })
 })
