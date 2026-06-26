@@ -963,6 +963,7 @@ async def test_execute_standard_scanner(setup_test_environment):
             plugin_id="mock_cli_plugin",
             target="127.0.0.1",
             inputs={},
+            safe_mode=0
         )
 
     assert status == TaskStatus.COMPLETED.value
