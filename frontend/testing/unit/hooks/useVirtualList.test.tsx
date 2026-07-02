@@ -11,13 +11,13 @@ if (typeof global.ResizeObserver === 'undefined') {
     unobserve() {}
     disconnect() {}
   } as any
-} 
+}
 
 Object.defineProperty(HTMLElement.prototype, 'scrollHeight', { configurable: true, value: 4000 })
 Object.defineProperty(HTMLElement.prototype, 'offsetHeight', { configurable: true, value: 600 })
 
 interface Captured {
-  virtualItems: ReturnType<typeof useVirtualList>['virtualItems'] 
+  virtualItems: ReturnType<typeof useVirtualList>['virtualItems']
   totalSize: number
 }
 
@@ -26,7 +26,7 @@ interface Captured {
 // Results are stashed on a plain (non-React-state) ref so assertions can
 // read the latest values after each render/act without an extra rerender.
 
-function Harness({ 
+function Harness({
   items,
   estimateSize,
   overscan,
@@ -144,4 +144,4 @@ describe('useVirtualList', () => {
 
     expect(captured.current.totalSize).toBe(400)
   })
-}) 
+})
