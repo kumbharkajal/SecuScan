@@ -100,6 +100,8 @@ class ScanRateLimiter:
             self._fallback_history[key] = [
                 ts for ts in self._fallback_history[key] if ts > cutoff
             ]
+            if not self._fallback_history[key]:
+                del self._fallback_history[key]
 
         # Check per-minute limit
         minute_count = len(self._fallback_history[bucket_min]) + 1
