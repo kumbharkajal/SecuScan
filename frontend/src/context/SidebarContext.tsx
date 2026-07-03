@@ -15,17 +15,26 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         localStorage.setItem('sidebar-expanded', JSON.stringify(isExpanded))
+        window.dispatchEvent(new CustomEvent('sidebar-state-changed', { detail: isExpanded }))
     }, [isExpanded])
 
     useEffect(() => {
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'sidebar-expanded' && e.newValue !== null) {
-                setIsExpanded(JSON.parse(e.newValue))
-            }
+        const handleStorageChange = () => {
+            const saved = localStorage.getItem('sidebar-expanded')
+            if (saved !== null) setIsExpanded(JSON.parse(saved))
+        }
+
+        const handleSidebarStateChanged = (e: Event) => {
+            const detail = (e as CustomEvent).detail
+            if (typeof detail === 'boolean') setIsExpanded(detail)
         }
 
         window.addEventListener('storage', handleStorageChange)
-        return () => window.removeEventListener('storage', handleStorageChange)
+        window.addEventListener('sidebar-state-changed', handleSidebarStateChanged)
+        return () => {
+            window.removeEventListener('storage', handleStorageChange)
+            window.removeEventListener('sidebar-state-changed', handleSidebarStateChanged)
+        }
     }, [])
 
     const toggleSidebar = () => setIsExpanded((prev: boolean) => !prev)
