@@ -1304,6 +1304,7 @@ class TaskExecutor:
     ) -> Dict[str, Any]:
         u_id = str(uuid.uuid4()).replace("-", "")
         finding_id = f"finding:{task_id}:{u_id[:8]}"
+        finding_group_id = finding.get("finding_group_id")
 
         _validate_risk_fields(finding)
         exploitability = finding.get("exploitability")
@@ -1336,62 +1337,110 @@ class TaskExecutor:
             risk_score=risk_score,
         )
 
-        await db.execute(
-            """
-            INSERT INTO findings (
-                id, owner_id, task_id, plugin_id, title, category, severity,
-                target, description, remediation, proof, cvss, cve,
-                metadata_json, discovered_at,
-                exploitability, confidence, validated, validation_method,
-                confidence_reason, finding_kind, finding_group_id, asset_id,
-                first_seen_at, last_seen_at, occurrence_count, corroborating_sources_json,
-                evidence_count, analyst_status, retest_status, evidence_json, asset_refs_json,
-                service_fingerprint, cpe, references_json,
-                asset_exposure, risk_score, risk_factors_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                finding_id,
-                owner_id,
-                task_id,
-                plugin_id,
-                finding["title"],
-                finding["category"],
-                finding["severity"],
-                target_value,
-                finding["description"],
-                finding.get("remediation", ""),
-                finding.get("proof"),
-                finding.get("cvss"),
-                finding.get("cve"),
-                json.dumps(metadata),
-                discovered.isoformat(),
-                exploitability,
-                confidence,
-                1 if finding.get("validated") else 0,
-                finding.get("validation_method"),
-                finding.get("confidence_reason"),
-                str(finding.get("finding_kind") or "observation"),
-                finding.get("finding_group_id"),
-                finding.get("asset_id"),
-                first_seen_at,
-                last_seen_at,
-                occurrence_count,
-                json.dumps(corroborating_sources),
-                evidence_count,
-                str(finding.get("analyst_status") or "new"),
-                str(finding.get("retest_status") or "not_requested"),
-                json.dumps(evidence),
-                json.dumps(asset_refs),
-                finding.get("service_fingerprint"),
-                finding.get("cpe"),
-                json.dumps(references),
-                asset_exposure,
-                risk_score,
-                json.dumps(risk_factors),
-            ),
+        existing = await db.fetchone(
+            "SELECT id, occurrence_count FROM findings WHERE owner_id = ? AND finding_group_id = ?",
+            (owner_id, finding_group_id),
         )
+
+        if existing:
+            existing_id = existing["id"]
+            new_count = int(existing["occurrence_count"] or 0) + occurrence_count
+            await db.execute(
+                """
+                UPDATE findings SET
+                    task_id = ?, plugin_id = ?, title = ?, category = ?, severity = ?,
+                    target = ?, description = ?, remediation = ?, proof = ?, cvss = ?, cve = ?,
+                    metadata_json = ?, discovered_at = ?,
+                    exploitability = ?, confidence = ?, validated = ?, validation_method = ?,
+                    confidence_reason = ?, finding_kind = ?,
+                    last_seen_at = ?, occurrence_count = ?, corroborating_sources_json = ?,
+                    evidence_count = ?, analyst_status = ?, retest_status = ?,
+                    evidence_json = ?, asset_refs_json = ?,
+                    service_fingerprint = ?, cpe = ?, references_json = ?,
+                    asset_exposure = ?, risk_score = ?, risk_factors_json = ?,
+                    asset_id = ?
+                WHERE id = ?
+                """,
+                (
+                    task_id, plugin_id,
+                    finding["title"], finding["category"], finding["severity"],
+                    target_value, finding["description"], finding.get("remediation", ""),
+                    finding.get("proof"), finding.get("cvss"), finding.get("cve"),
+                    json.dumps(metadata), discovered.isoformat(),
+                    exploitability, confidence,
+                    1 if finding.get("validated") else 0, finding.get("validation_method"),
+                    finding.get("confidence_reason"),
+                    str(finding.get("finding_kind") or "observation"),
+                    last_seen_at, new_count, json.dumps(corroborating_sources),
+                    evidence_count,
+                    str(finding.get("analyst_status") or "new"),
+                    str(finding.get("retest_status") or "not_requested"),
+                    json.dumps(evidence), json.dumps(asset_refs),
+                    finding.get("service_fingerprint"), finding.get("cpe"),
+                    json.dumps(references),
+                    asset_exposure, risk_score, json.dumps(risk_factors),
+                    finding.get("asset_id"),
+                    existing_id,
+                ),
+            )
+            finding_id = existing_id
+        else:
+            await db.execute(
+                """
+                INSERT INTO findings (
+                    id, owner_id, task_id, plugin_id, title, category, severity,
+                    target, description, remediation, proof, cvss, cve,
+                    metadata_json, discovered_at,
+                    exploitability, confidence, validated, validation_method,
+                    confidence_reason, finding_kind, finding_group_id, asset_id,
+                    first_seen_at, last_seen_at, occurrence_count, corroborating_sources_json,
+                    evidence_count, analyst_status, retest_status, evidence_json, asset_refs_json,
+                    service_fingerprint, cpe, references_json,
+                    asset_exposure, risk_score, risk_factors_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    finding_id,
+                    owner_id,
+                    task_id,
+                    plugin_id,
+                    finding["title"],
+                    finding["category"],
+                    finding["severity"],
+                    target_value,
+                    finding["description"],
+                    finding.get("remediation", ""),
+                    finding.get("proof"),
+                    finding.get("cvss"),
+                    finding.get("cve"),
+                    json.dumps(metadata),
+                    discovered.isoformat(),
+                    exploitability,
+                    confidence,
+                    1 if finding.get("validated") else 0,
+                    finding.get("validation_method"),
+                    finding.get("confidence_reason"),
+                    str(finding.get("finding_kind") or "observation"),
+                    finding_group_id,
+                    finding.get("asset_id"),
+                    first_seen_at,
+                    last_seen_at,
+                    occurrence_count,
+                    json.dumps(corroborating_sources),
+                    evidence_count,
+                    str(finding.get("analyst_status") or "new"),
+                    str(finding.get("retest_status") or "not_requested"),
+                    json.dumps(evidence),
+                    json.dumps(asset_refs),
+                    finding.get("service_fingerprint"),
+                    finding.get("cpe"),
+                    json.dumps(references),
+                    asset_exposure,
+                    risk_score,
+                    json.dumps(risk_factors),
+                ),
+            )
         return {
             **finding,
             "id": finding_id,
@@ -1405,7 +1454,7 @@ class TaskExecutor:
             "corroborating_sources": corroborating_sources,
             "first_seen_at": first_seen_at,
             "last_seen_at": last_seen_at,
-            "occurrence_count": occurrence_count,
+            "occurrence_count": occurrence_count if not existing else (int(existing["occurrence_count"]) + occurrence_count),
             "evidence_count": evidence_count,
             "risk_score": risk_score,
             "risk_factors": risk_factors,
