@@ -410,3 +410,68 @@ def test_plugin_validation_presets(setup_test_environment):
 
     finally:
         target_field.validation = orig_validation
+
+
+def test_validate_inputs_rejects_path_traversal(setup_test_environment):
+    """_validate_inputs_against_schema must reject ``../`` in STRING/TEXT fields."""
+    manager = PluginManager(settings.plugins_dir)
+    asyncio.run(manager.load_plugins())
+
+    # Use secret_scanner — its target field has no validation pattern
+    plugin = manager.get_plugin("secret_scanner")
+    assert plugin is not None
+
+    target_field = next(f for f in plugin.fields if f.id == "target")
+
+    with pytest.raises(ValueError, match="traversal"):
+        manager._validate_inputs_against_schema(
+            plugin,
+            {target_field.id: "../../../etc/passwd"},
+        )
+
+    with pytest.raises(ValueError, match="traversal"):
+        manager._validate_inputs_against_schema(
+            plugin,
+            {target_field.id: "..\\..\\..\\etc\\passwd"},
+        )
+
+    # Legitimate values must still pass
+    manager._validate_inputs_against_schema(
+        plugin,
+        {target_field.id: "/home/user/project"},
+    )
+
+
+def test_plugin_build_command_rejects_path_traversal_in_target(setup_test_environment):
+    """build_command must reject ``../`` in free-form string fields like target."""
+    manager = PluginManager(settings.plugins_dir)
+    asyncio.run(manager.load_plugins())
+
+    # secret_scanner has an unprotected string target field passed to --source
+    for plugin_id, field_id, traversal_value in [
+        ("secret_scanner", "target", "../../../etc/passwd"),
+        ("nikto", "config_file", "../../../etc/nikto.conf"),
+        ("semgrep_scanner", "target", "../../../etc"),
+        ("yara_scan", "target", "../../../etc/passwd"),
+    ]:
+        plugin = manager.get_plugin(plugin_id)
+        assert plugin is not None, f"Plugin {plugin_id} not found"
+
+        with pytest.raises(ValueError, match="traversal"):
+            manager.build_command(
+                plugin_id,
+                {field_id: traversal_value},
+            )
+
+
+def test_plugin_build_command_allows_legitimate_targets(setup_test_environment):
+    """build_command must still allow legitimate hostnames, IPs, and URLs."""
+    manager = PluginManager(settings.plugins_dir)
+    asyncio.run(manager.load_plugins())
+
+    command = manager.build_command(
+        "http_inspector",
+        {"url": "https://example.com", "follow_redirects": True},
+    )
+    assert command is not None
+    assert "https://example.com" in command

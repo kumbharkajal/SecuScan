@@ -446,12 +446,17 @@ class PluginManager:
         return normalized
 
     def _reject_path_traversal(self, value: str) -> None:
-        """Raise ValueError if value contains parent-directory traversal components."""
+        """Raise ValueError if value contains parent-directory traversal components.
+
+        Called for every STRING/TEXT field during schema validation to prevent
+        ``../`` sequences from reaching external tools as file-path arguments,
+        which would enable arbitrary file-read via path traversal.
+        """
         normalized = value.replace("\\", os.sep).replace("/", os.sep)
         parts = normalized.split(os.sep)
         if ".." in parts:
             raise ValueError(
-                f"Wordlist path {value!r} contains parent-directory traversal ('..'), "
+                f"Value {value!r} contains parent-directory traversal ('..'), "
                 f"which is not allowed."
             )
 
@@ -627,8 +632,9 @@ class PluginManager:
                         msg = validation.get("message", f"Value does not match pattern {pattern!r}")
                         raise ValueError(f"Field '{field_id}': {msg}")
 
-                # Reject argv-level flag injection
+                # Reject argv-level flag injection and filesystem path traversal
                 self._reject_injected_args(field_id, value_str)
+                self._reject_path_traversal(value_str)
 
     def build_command(self, plugin_id: str, inputs: Dict) -> Optional[List[str]]:
         """
