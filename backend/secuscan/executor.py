@@ -818,6 +818,7 @@ class TaskExecutor:
         except Exception as e:
             logger.error(f"Task {task_id} failed: {e}", exc_info=True)
             duration = (time.time() - start_time) if 'start_time' in locals() else 0
+            safe_error = redact(str(e))
             await db.execute(
                 """
                 UPDATE tasks SET
@@ -831,7 +832,7 @@ class TaskExecutor:
                     TaskStatus.FAILED.value,
                     datetime.now().isoformat(),
                     duration,
-                    str(e),
+                    safe_error,
                     task_id
                 )
             )
@@ -841,9 +842,9 @@ class TaskExecutor:
 
             await db.log_audit(
                 "task_failed",
-                f"Task failed: {str(e)}",
+                f"Task failed: {safe_error}",
                 severity="error",
-                context={"task_id": task_id, "error": str(e)},
+                context={"task_id": task_id, "error": safe_error},
                 task_id=task_id
             )
         finally:
@@ -1622,7 +1623,7 @@ class TaskExecutor:
             except Exception as exc:
                 logger.error("Unexpected error running parser sandbox for '%s': %s", plugin.id, exc)
                 raise RuntimeError(
-                    f"Custom parser encountered an unexpected error for plugin '{plugin.id}': {exc}"
+                    f"Custom parser encountered an unexpected error for plugin '{plugin.id}'"
                 ) from exc
 
         # 2. Fallback to legacy built-in parsers (only reached when no parser.py exists)

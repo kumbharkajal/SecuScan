@@ -103,7 +103,7 @@ from .database import get_db
 from .plugins import get_plugin_manager, init_plugins
 from . import notification_service
 from .executor import executor
-from .redaction import redact_inputs
+from .redaction import redact, redact_inputs
 from .ratelimit import (
     rate_limiter, concurrent_limiter, workflow_rate_limiter,
     task_start_limiter, vault_limiter,
@@ -923,8 +923,8 @@ async def get_task_result(task_id: str, owner: str = Depends(get_current_owner))
         "raw_output_excerpt": raw_output,
         "raw_output": raw_output,
         "command_used": task_row["command_used"],
-        "errors": [{"message": task_row["error_message"]}] if task_row["error_message"] else [],
-        "error_message": task_row["error_message"],
+        "errors": [{"message": redact(task_row["error_message"])}] if task_row["error_message"] else [],
+        "error_message": redact(task_row["error_message"]) if task_row["error_message"] else None,
         "exit_code": task_row["exit_code"],
         "metadata": {}
     }
