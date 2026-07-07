@@ -68,7 +68,6 @@ export default function Scans() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const PAGE_LIMIT = 10;
-  const [error, setError] = useState<string | null>(null);
 
   // Modal state for confirm dialogs
   const [modalState, setModalState] = useState<{
@@ -176,7 +175,7 @@ export default function Scans() {
   }
 
   function handleFilterChange(value: string) {
-    setError(null);
+   
     setFilter(value);
     setPage(1);
   }
@@ -207,7 +206,7 @@ export default function Scans() {
       type: "danger",
       onConfirm: async () => {
         try {
-          setError(null);
+         
           await deleteTask(taskId);
           setTasks((prev) => prev.filter((t) => t.task_id !== taskId));
           if (expandedId === taskId) setExpandedId(null);
@@ -229,7 +228,7 @@ export default function Scans() {
       type: "danger",
       onConfirm: async () => {
         try {
-          setError(null);
+         
           await clearAllTasks();
           setTasks([]);
           setSelectedIds([]);
@@ -253,7 +252,7 @@ export default function Scans() {
       type: "danger",
       onConfirm: async () => {
         try {
-          setError(null);
+          
           await bulkDeleteTasks(selectedIds);
           setTasks((prev) => prev.filter((t) => !selectedIds.includes(t.task_id)));
           setSelectedIds([]);
@@ -329,27 +328,7 @@ export default function Scans() {
         </div>
       </header>
 
-      {error && (
-        <div
-          role="alert"
-          className="bg-rag-red/10 border-4 border-rag-red text-rag-red p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between gap-4"
-        >
-          <div className="flex items-center gap-4">
-            <span className="material-symbols-outlined text-2xl shrink-0">error</span>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em]">System_Alert</p>
-              <p className="font-mono text-xs">{error}</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setError(null)}
-            className="text-rag-red/60 hover:text-rag-red transition-colors shrink-0"
-            aria-label="Close alert"
-          >
-            <span className="material-symbols-outlined text-lg">close</span>
-          </button>
-        </div>
-      )}
+      
 
       {/* Filtration Block */}
       <section className="bg-charcoal border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col xl:flex-row justify-between items-center gap-12">
@@ -740,11 +719,11 @@ export default function Scans() {
             limit={PAGE_LIMIT}
             loading={loading}
             onPrev={() => {
-              setError(null);
+            
               setPage((p) => p - 1);
             }}
             onNext={() => {
-              setError(null);
+      
               setPage((p) => p + 1);
             }}
           />
