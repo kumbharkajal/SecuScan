@@ -145,7 +145,7 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     (
         "vault_ref",
         re.compile(
-            r"((?:vault\s*:\s*|vault://)\s*)([A-Za-z0-9_\-\./]+)",
+            r"((?:vault://|vault\s*:\s*)\s*)([A-Za-z0-9_\-\./]+)",
             re.IGNORECASE,
         ),
     ),

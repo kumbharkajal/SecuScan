@@ -22,7 +22,7 @@ def test_preview_command_endpoint(client_with_key):
     # Try with a valid plugin (http_inspector) and vault reference
     response = client.post(
         "/api/v1/plugin/http_inspector/preview",
-        json={"inputs": {"url": "http://127.0.0.1", "user_agent": "vault:my-secret-agent"}},
+        json={"inputs": {"url": "http://127.0.0.1/?token=vault:my-secret-agent"}},
         headers=headers
     )
     assert response.status_code == 200
@@ -30,7 +30,7 @@ def test_preview_command_endpoint(client_with_key):
     assert "command" in data
     cmd_str = " ".join(data["command"])
     assert "vault:[REDACTED]" in cmd_str
-    assert "http://127.0.0.1" in cmd_str
+    assert "http://127.0.0.1/?token=vault:[REDACTED]" in cmd_str
 
 def test_preview_command_missing_required(client_with_key):
     client, api_key = client_with_key
@@ -39,7 +39,7 @@ def test_preview_command_missing_required(client_with_key):
     # Missing 'url' field which is required for http_inspector
     response = client.post(
         "/api/v1/plugin/http_inspector/preview",
-        json={"inputs": {"user_agent": "curl"}},
+        json={"inputs": {"timeout": 15}},
         headers=headers
     )
     assert response.status_code == 400
